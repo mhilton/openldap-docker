@@ -1,6 +1,6 @@
 ARG BASE=ubuntu
 FROM $BASE
-RUN apt-get -q -o 'APT::GzipIndexes=true' update && \
+RUN apt-get -q update && \
 	echo "slapd slapd/no_configuration boolean true" | debconf-set-selections && \
 	DEBIAN_FRONTEND=noninteractive apt-get -q install -y ldap-utils slapd && \
 	apt-get -q clean
