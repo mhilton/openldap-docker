@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+confdir=/srv/ldap/conf
+initdir=/srv/ldap/init
+
+initdb() {
+	for f in $initdir/$1/*; do 
+		if [ -x "$f" ]; then
+			"$f" | slapadd -b "$1" -F $confdir -d $LOG_LEVEL
+		elif [ -r "$f" ]; then
+			slapadd -l "$f" -b "$1" -F $confdir -d $LOG_LEVEL
+		fi	
+	done
+}
+
+if [ ! -d $confdir ]; then
+	# Need to configure slapd
+	mkdir -p $confdir
+	initdb "cn=config"
+	for db in $initdir/*; do
+		db=${db##*/}
+		if [ "$db" != "cn=config" ]; then
+			initdb "$db"
+		fi
+	done
+fi
+
+slapd -F $confdir -d $LOG_LEVEL
